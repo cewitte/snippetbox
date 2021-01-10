@@ -41,10 +41,46 @@ func (m *UserModel) Insert(name, email, password string) error {
 
 // We'll use the Authenticate method to verify whether a user exists with the provided email address and password. this will return the relevant user ID if they do.
 func (m *UserModel) Authenticate(email, password string) (int, error) {
-	return 0, nil
+	// Retrieve the id and hashed password associated with the given email. If no matching email exists, or the user is not active, we return the ErrInvalidCredentials error.
+	var id int
+	var hashedPassword []byte
+	stmt := "SELECT id, hashed_password FROM users WHERE email = ? AND active = TRUE"
+	row := m.DB.QueryRow(stmt, email)
+	err := row.Scan(&id, &hashedPassword)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, models.ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	// Check whether the hased password and plain-text password match. If they don't, we return the ErrInvalidCredentials error.
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return 0, models.ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	// Otherwise the password is correct. Return the user ID.
+	return id, nil
 }
 
 // We'll use the Get method to fetch details for a specific user based on their user ID.
 func (m *UserModel) Get(id int) (*models.User, error) {
-	return nil, nil
+	u := &models.User{}
+
+	stmt := `SELECT id, name, email, created, active FROM users WHERE id = ?`
+	err := m.DB.QueryRow(stmt, id).Scan(&u.ID, &u.Name, &u.Email, &u.Created, &u.Active)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		} else {
+			return nil, err
+		}
+	}
+	return u, nil
 }

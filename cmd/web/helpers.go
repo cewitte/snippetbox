@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/justinas/nosurf"
 )
 
 // Create an addDefaultData helper. This takes a pointer to a templateData struct, adds the current year to the CurrentYear field, and then returns the pointer. Again, we're not using using the *http.Request parameter at the moment, but we will do it later in the book.
@@ -14,9 +16,14 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 		td = &templateData{}
 	}
 
+	// Add the CSFR token to the templateData struct.
+	td.CSRFToken = nosurf.Token(r)
 	td.CurrentYear = time.Now().Year()
 	// Add the flash message to the template data, if one exists.
 	td.Flash = app.session.PopString(r, "flash")
+
+	// Add the authentication status to the template data.
+	td.IsAuthenticated = app.isAuthenticated(r)
 	return td
 }
 
@@ -60,4 +67,14 @@ func (app *application) clientError(w http.ResponseWriter, status int) {
 // For consistency, we'll also implement a notFound helper. This is simply a convenience wrapper around clientError which sends a 404 Not Found response to the user.
 func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
+}
+
+// Return true if the current request is from authenticated user, otherwise return false.
+func (app *application) isAuthenticated(r *http.Request) bool {
+	isAuthenticated, ok := r.Context().Value(contextKeyIsAuthenticated).(bool)
+	if !ok {
+		return false
+	}
+
+	return isAuthenticated
 }

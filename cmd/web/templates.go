@@ -10,11 +10,13 @@ import (
 )
 
 type templateData struct {
-	CurrentYear int
-	Flash       string // confirmation message stored on session
-	Form        *forms.Form
-	Snippet     *models.Snippet
-	Snippets    []*models.Snippet
+	CSRFToken       string // Add a new CSRFToken field to the templateData.
+	CurrentYear     int
+	Flash           string // Confirmation message stored on session.
+	Form            *forms.Form
+	IsAuthenticated bool // Add a new IsAuthenticated field to the templateData struct.
+	Snippet         *models.Snippet
+	Snippets        []*models.Snippet
 }
 
 // Create a humanDate function which reamins a nicely formatted string representation of a time.Time object.

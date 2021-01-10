@@ -21,13 +21,18 @@
                 <a href="/snippet/create">Create snippet</a>
             </div>
             <div>
-                <a href="/user/signup">Signup</a>
-                <a href="/user/login">Login</a>
-                <form action="/user/logout" method="POST">
-                    <button>Logout</button>
-                </form>
-            </div>
-           
+                <!-- Toggle the navigation links -->
+                {{if .IsAuthenticated}}
+                    <form action="/user/logout" method="POST">
+                        <!-- Include the CSRF token -->
+                        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                        <button>Logout</button>
+                    </form>
+                {{else}}
+                    <a href="/user/signup">Signup</a>
+                    <a href="/user/login">Login</a>
+                {{end}}
+            </div>     
         </nav>
         <main>
             {{with .Flash}}
