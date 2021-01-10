@@ -22,6 +22,7 @@ type application struct {
 	session       *sessions.Session             // Add a new session field to the application struct
 	snippets      *mysql.SnippetModel           // Add a snippets field to the application struct. This will allow us to make the SnippetModel object available to our handlers.
 	templateCache map[string]*template.Template // Add a templateCache field to the application struct.
+	users         *mysql.UserModel              // Add a new users field to the application struct
 }
 
 func main() {
@@ -73,6 +74,7 @@ func main() {
 		session:       session,
 		snippets:      &mysql.SnippetModel{DB: db}, // Initialize mysql.SnippetModel instance and add it to the application dependencies.
 		templateCache: templateCache,
+		users:         &mysql.UserModel{DB: db}, // Initialize a mysql.UserModel instance and add it to the application dependencies.
 	}
 
 	// Initialize a tls.Config struct to hold the non-default TLS settings we want the server to use.
